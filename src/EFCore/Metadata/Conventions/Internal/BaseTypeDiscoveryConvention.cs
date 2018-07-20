@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
@@ -21,14 +22,15 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
             var clrType = entityType.ClrType;
             if (clrType == null
                 || entityType.HasDefiningNavigation()
-                || entityType.FindDeclaredOwnership() != null)
+                || entityType.FindDeclaredOwnership() != null
+                || entityType.Model.ShouldBeOwnedType(entityType.Model.GetDisplayName(clrType)))
             {
                 return entityTypeBuilder;
             }
 
             var baseEntityType = FindClosestBaseType(entityType);
             return baseEntityType == null
-                || baseEntityType.DefiningNavigationName != null
+                   || baseEntityType.HasDefiningNavigation()
                 ? entityTypeBuilder
                 : entityTypeBuilder.HasBaseType(baseEntityType, ConfigurationSource.Convention);
         }
